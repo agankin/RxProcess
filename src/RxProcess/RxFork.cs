@@ -22,6 +22,16 @@ public class RxFork
     public static RxFork EmptyForAlreadyForked { get; } = new RxFork();
 
     /// <summary>
+    /// If called from the master process starts the forked process.
+    /// If called from a forked process does nothing.
+    /// </summary>
+    public void StartInMaster()
+    {
+        if (_isInMaster)
+            _rxProcess.Start();
+    }
+
+    /// <summary>
     /// If called from the master process invokes the provided delegate with passing an instance of <see cref="RxProcess"/>
     /// representing the forked process.
     /// If called from a forked process does nothing.

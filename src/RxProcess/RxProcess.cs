@@ -10,9 +10,14 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     private readonly ConcurrentSet<IObserver<StdOutLine>> _observers = [];
     private readonly Process _process;
 
-    private RxProcess(Process process)
+    private volatile int _state = (int)RxProcessState.Unstarted;
+
+    private RxProcess(ProcessStartInfo startInfo)
     {
-        _process = process;
+        _process = new Process
+        {
+            StartInfo = startInfo
+        };;
 
         _process.OutputDataReceived += OnOutLineReceived;
         _process.ErrorDataReceived += OnErrLineReceived;
@@ -20,12 +25,17 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     }
 
     /// <summary>
-    /// Starts a process.
+    /// The process state.
+    /// </summary>
+    public RxProcessState State => (RxProcessState)_state;
+
+    /// <summary>
+    /// Creates new instance  process.
     /// </summary>
     /// <param name="programFile">File name to start.</param>
     /// <param name="args">Command line arguments to pass to the started process.</param>
     /// <returns>An instance of <see cref="RxProcess"/>.</returns>
-    public static RxProcess Start(string programFile, params string[] args) => Start(programFile, args.AsEnumerable());
+    public static RxProcess Create(string programFile, params string[] args) => Create(programFile, args.AsEnumerable());
     
     /// <summary>
     /// Starts a process.
@@ -33,7 +43,7 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     /// <param name="programFile">File name to start.</param>
     /// <param name="args">Command line arguments to pass to the started process.</param>
     /// <returns>An instance of <see cref="RxProcess"/>.</returns>
-    public static RxProcess Start(string programFile, IEnumerable<string> args)
+    public static RxProcess Create(string programFile, IEnumerable<string> args)
     {
         var argsLine = string.Join(" ", args);
 
@@ -47,19 +57,33 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+
+        return new RxProcess(startInfo);
+    }
+
+    /// <summary>
+    /// Starts the process.
+    /// </summary>
+    public void Start()
+    {
+        var state = (RxProcessState)Interlocked.CompareExchange(ref _state, (int)RxProcessState.Running, (int)RxProcessState.Unstarted);
+        if (state != RxProcessState.Unstarted)
+            ThrowWrongState(state);
         
-        var process = new Process
-        {
-            StartInfo = startInfo
-        };
+        _process.Start();
+        _process.BeginOutputReadLine();
+        _process.BeginErrorReadLine();
+    }
 
-        var rxProcess = new RxProcess(process);
+    /// <summary>
+    /// Kills the process.
+    /// </summary>
+    public void Kill()
+    {
+        if (_state != (int)RxProcessState.Running)
+            ThrowWrongState((RxProcessState)_state);
 
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        return rxProcess;
+        _process.Kill();
     }
 
     /// <inheritdoc/>
@@ -92,6 +116,8 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
 
     private void OnExited(object? sender, EventArgs e)
     {
+        _state = (int)RxProcessState.Exited;
+
         UnsubscribeAll();
         foreach (var observer in _observers)
             observer.OnCompleted();
@@ -102,5 +128,10 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
         _process.OutputDataReceived -= OnOutLineReceived;
         _process.ErrorDataReceived -= OnErrLineReceived;
         _process.Exited -= OnExited;
+    }
+
+    private static void ThrowWrongState(RxProcessState state)
+    {
+        throw new InvalidOperationException($"The process is in {state} state.");
     }
 }

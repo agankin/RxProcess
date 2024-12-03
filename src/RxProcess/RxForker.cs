@@ -21,9 +21,9 @@ public static class RxForker
         if (IsForked())
             return RxFork.EmptyForAlreadyForked;
 
-        var entry = Assembly.GetExecutingAssembly().Location;
+        var entry = Assembly.GetEntryAssembly().Location;
         var args = Environment.GetCommandLineArgs().AsEnumerable();
-        var rxProcess = RxProcess.Start(DotnetCmd, args.Prepend(entry).Append(ForkedArg));
+        var rxProcess = RxProcess.Create(DotnetCmd, args.Prepend(entry).Append(ForkedArg));
 
         return new RxFork(rxProcess);
     }
