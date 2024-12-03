@@ -16,12 +16,11 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     {
         _process = new Process
         {
-            StartInfo = startInfo
+            StartInfo = startInfo,
+            EnableRaisingEvents = true
         };;
 
-        _process.OutputDataReceived += OnOutLineReceived;
-        _process.ErrorDataReceived += OnErrLineReceived;
-        _process.Exited += OnExited;
+        SubscribeAllEvents();
     }
 
     /// <summary>
@@ -96,7 +95,7 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        UnsubscribeAll();
+        UnsubscribeAllEvents();
         _process.Dispose();
     }
 
@@ -118,12 +117,19 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     {
         _state = (int)RxProcessState.Exited;
 
-        UnsubscribeAll();
+        UnsubscribeAllEvents();
         foreach (var observer in _observers)
             observer.OnCompleted();
     }
 
-    private void UnsubscribeAll()
+    private void SubscribeAllEvents()
+    {
+        _process.OutputDataReceived += OnOutLineReceived;
+        _process.ErrorDataReceived += OnErrLineReceived;
+        _process.Exited += OnExited;
+    }
+    
+    private void UnsubscribeAllEvents()
     {
         _process.OutputDataReceived -= OnOutLineReceived;
         _process.ErrorDataReceived -= OnErrLineReceived;
