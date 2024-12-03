@@ -2,7 +2,10 @@ using System.Diagnostics;
 
 namespace RxProcess;
 
-public class RxProcess : IDisposable, IObservable<StdOutLine>
+/// <summary>
+/// Represensts a process as an observable reactively providing stdout/stderr data.
+/// </summary>
+public class RxProcess : IObservable<StdOutLine>, IDisposable
 {
     private readonly ConcurrentSet<IObserver<StdOutLine>> _observers = [];
     private readonly Process _process;
@@ -16,8 +19,20 @@ public class RxProcess : IDisposable, IObservable<StdOutLine>
         _process.Exited += OnExited;
     }
 
+    /// <summary>
+    /// Starts a process.
+    /// </summary>
+    /// <param name="programFile">File name to start.</param>
+    /// <param name="args">Command line arguments to pass to the started process.</param>
+    /// <returns>An instance of <see cref="RxProcess"/>.</returns>
     public static RxProcess Start(string programFile, params string[] args) => Start(programFile, args.AsEnumerable());
     
+    /// <summary>
+    /// Starts a process.
+    /// </summary>
+    /// <param name="programFile">File name to start.</param>
+    /// <param name="args">Command line arguments to pass to the started process.</param>
+    /// <returns>An instance of <see cref="RxProcess"/>.</returns>
     public static RxProcess Start(string programFile, IEnumerable<string> args)
     {
         var argsLine = string.Join(" ", args);
@@ -47,14 +62,14 @@ public class RxProcess : IDisposable, IObservable<StdOutLine>
         return rxProcess;
     }
 
-    public void SendLine(string line) => _process.StandardInput.WriteLine(line);
-
+    /// <inheritdoc/>
     public IDisposable Subscribe(IObserver<StdOutLine> observer)
     {
         _observers.Add(observer);
         return new DoDisposable(() => _observers.Remove(observer));
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         UnsubscribeAll();

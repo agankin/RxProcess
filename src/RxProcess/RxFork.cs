@@ -1,23 +1,35 @@
-using System.Reflection;
-
 namespace RxProcess;
 
-public static class RxFork
+/// <summary>
+/// Represents a fork of the current process.
+/// </summary>
+public class RxFork
 {
-    private const string DotnetCmd = "dotnet";
-    private const string ForkedArg = "--forked";
+    private readonly RxProcess _rxProcess = null!;
+    private readonly bool _isInMaster;
 
-    public static void Fork(Action<RxProcess>? onForked = null)
+    internal RxFork() {}
+    
+    internal RxFork(RxProcess rxProcess)
     {
-        if (IsForked())
-            return;
-
-        var entry = Assembly.GetExecutingAssembly().Location;
-        var rxProcess = RxProcess.Start(DotnetCmd, entry, ForkedArg);
-
-        onForked?.Invoke(rxProcess);
+        _rxProcess = rxProcess;
+        _isInMaster = true;
     }
 
-    private static bool IsForked() => Environment.GetCommandLineArgs()
-        .Any(args => string.Equals(args, ForkedArg, StringComparison.OrdinalIgnoreCase));
+    /// <summary>
+    /// The empty instance returned on an attempt of forking already forked process.
+    /// </summary>
+    public static RxFork EmptyForAlreadyForked { get; } = new RxFork();
+
+    /// <summary>
+    /// If called from the master process invokes the provided delegate with passing an instance of <see cref="RxProcess"/>
+    /// representing the forked process.
+    /// If called from a forked process does nothing.
+    /// </summary>
+    /// <param name="action">A delegate.</param>
+    public void HandleInMaster(Action<RxProcess> action)
+    {
+        if (_isInMaster)
+            action?.Invoke(_rxProcess);
+    }
 }
