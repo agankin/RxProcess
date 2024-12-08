@@ -14,12 +14,12 @@ public static class RxForker
     /// Forks the current master process.
     /// </summary>
     /// <remarks>
-    /// If invoked from a fork process returns <see cref="RxFork.EmptyForAlreadyForked"/> without creating new fork.
+    /// If invoked from a fork process returns <see cref="RxFork.NoneForAlreadyForked"/> without creating a new fork.
     /// </remarks> 
     public static RxFork Fork()
     {
         if (IsForked())
-            return RxFork.EmptyForAlreadyForked;
+            return RxFork.NoneForAlreadyForked;
 
         var entry = Assembly.GetEntryAssembly().Location;
         var args = Environment.GetCommandLineArgs().AsEnumerable();

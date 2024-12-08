@@ -3,7 +3,7 @@ namespace RxProcess;
 /// <summary>
 /// Represents a fork of the current process.
 /// </summary>
-public class RxFork
+public class RxFork : IObservable<StdOutLine>, IDisposable
 {
     private readonly RxProcess _rxProcess = null!;
     private readonly bool _isInMaster;
@@ -19,7 +19,7 @@ public class RxFork
     /// <summary>
     /// The empty instance returned on an attempt of forking already forked process.
     /// </summary>
-    public static RxFork EmptyForAlreadyForked { get; } = new RxFork();
+    public static RxFork NoneForAlreadyForked { get; } = new RxFork();
 
     /// <summary>
     /// If called from the master process starts the forked process.
@@ -31,15 +31,16 @@ public class RxFork
             _rxProcess.Start();
     }
 
-    /// <summary>
-    /// If called from the master process invokes the provided delegate with passing an instance of <see cref="RxProcess"/>
-    /// representing the forked process.
-    /// If called from a forked process does nothing.
-    /// </summary>
-    /// <param name="action">A delegate.</param>
-    public void HandleInMaster(Action<RxProcess> action)
+    /// <inheritdoc/>
+    public IDisposable Subscribe(IObserver<StdOutLine> observer)
+    {
+        return _isInMaster ? _rxProcess.Subscribe(observer) : new DummyDisposable();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
     {
         if (_isInMaster)
-            action?.Invoke(_rxProcess);
+            _rxProcess.Dispose();
     }
 }

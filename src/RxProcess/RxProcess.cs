@@ -7,7 +7,7 @@ namespace RxProcess;
 /// </summary>
 public class RxProcess : IObservable<StdOutLine>, IDisposable
 {
-    private readonly ConcurrentSet<IObserver<StdOutLine>> _observers = [];
+    private readonly RxSubscriptionSet _subscriptions = new();
     private readonly Process _process;
 
     private volatile int _state = (int)RxProcessState.Unstarted;
@@ -29,18 +29,18 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     public RxProcessState State => (RxProcessState)_state;
 
     /// <summary>
-    /// Creates new instance  process.
+    /// Creates new instance of <see cref="RxProcess"/>.
     /// </summary>
-    /// <param name="programFile">File name to start.</param>
-    /// <param name="args">Command line arguments to pass to the started process.</param>
-    /// <returns>An instance of <see cref="RxProcess"/>.</returns>
+    /// <param name="programFile">A file name to start.</param>
+    /// <param name="args">Command line arguments that will be passed to the started process.</param>
+    /// <returns>A new instance of <see cref="RxProcess"/>.</returns>
     public static RxProcess Create(string programFile, params string[] args) => Create(programFile, args.AsEnumerable());
     
     /// <summary>
     /// Starts a process.
     /// </summary>
-    /// <param name="programFile">File name to start.</param>
-    /// <param name="args">Command line arguments to pass to the started process.</param>
+    /// <param name="programFile">A file name to start.</param>
+    /// <param name="args">Command line arguments that will be passed to the started process.</param>
     /// <returns>An instance of <see cref="RxProcess"/>.</returns>
     public static RxProcess Create(string programFile, IEnumerable<string> args)
     {
@@ -86,11 +86,7 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     }
 
     /// <inheritdoc/>
-    public IDisposable Subscribe(IObserver<StdOutLine> observer)
-    {
-        _observers.Add(observer);
-        return new DoDisposable(() => _observers.Remove(observer));
-    }
+    public IDisposable Subscribe(IObserver<StdOutLine> observer) => _subscriptions.Add(observer);
 
     /// <inheritdoc/>
     public void Dispose()
@@ -102,15 +98,15 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     private void OnOutLineReceived(object sender, DataReceivedEventArgs e)
     {
         var line = StdOutLine.Out(e.Data ?? string.Empty);
-        foreach (var observer in _observers)
-            observer.OnNext(line);
+        foreach (var subscription in _subscriptions)
+            subscription.OnNext(line);
     }
 
     private void OnErrLineReceived(object sender, DataReceivedEventArgs e)
     {
         var line = StdOutLine.Err(e.Data ?? string.Empty);
-        foreach (var observer in _observers)
-            observer.OnNext(line);
+        foreach (var subscription in _subscriptions)
+            subscription.OnNext(line);
     }
 
     private void OnExited(object? sender, EventArgs e)
@@ -118,8 +114,8 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
         _state = (int)RxProcessState.Exited;
 
         UnsubscribeAllEvents();
-        foreach (var observer in _observers)
-            observer.OnCompleted();
+        foreach (var subscription in _subscriptions)
+            subscription.Complete();
     }
 
     private void SubscribeAllEvents()
@@ -136,8 +132,6 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
         _process.Exited -= OnExited;
     }
 
-    private static void ThrowWrongState(RxProcessState state)
-    {
+    private static void ThrowWrongState(RxProcessState state) =>
         throw new InvalidOperationException($"The process is in {state} state.");
-    }
 }

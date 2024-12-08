@@ -11,10 +11,16 @@ public readonly record struct StdOutLine(
 )
 {
     /// <summary>
+    /// Checks if a line instance is from the standard output.
+    /// </summary>
+    /// <param name="line">A line.</param>
+    public static bool IsOut(StdOutLine line) => line.Type == StdOutType.Err;
+    
+    /// <summary>
     /// Checks if a line instance is from the standard error.
     /// </summary>
     /// <param name="line">A line.</param>
-    public static bool IsStdErrLine(StdOutLine line) => line.Type == StdOutType.Err;
+    public static bool IsErr(StdOutLine line) => line.Type == StdOutType.Err;
 
     internal static StdOutLine Out(string line) => new StdOutLine(line, StdOutType.Out);
 
