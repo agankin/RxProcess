@@ -18,5 +18,10 @@ public enum RxProcessState
     /// <summary>
     /// Exited.
     /// </summary>
-    Exited
+    Exited,
+
+    /// <summary>
+    /// Disposed.
+    /// </summary>
+    Disposed
 }

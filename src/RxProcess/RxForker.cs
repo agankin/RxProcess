@@ -41,7 +41,6 @@ public static class RxForker
             action?.Invoke();
     }
 
-    
     /// <summary>
     /// Invokes a delegate if called from a fork process.
     /// </summary>

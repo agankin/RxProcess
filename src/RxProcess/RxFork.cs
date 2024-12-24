@@ -23,12 +23,39 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
 
     /// <summary>
     /// If called from the master process starts the forked process.
-    /// If called from a forked process does nothing.
     /// </summary>
-    public void StartInMaster()
+    /// <remarks>
+    /// The method does nothing if called from a forked process.
+    /// </remarks>
+    public void Start()
     {
         if (_isInMaster)
             _rxProcess.Start();
+    }
+
+    /// <summary>
+    /// If called from the master process kills the forked process.
+    /// </summary>
+    /// <remarks>
+    /// The method does nothing if called from a forked process.
+    /// </remarks>
+    public void Kill()
+    {
+        if (_isInMaster)
+            _rxProcess.Kill();
+    }
+
+    /// <summary>
+    /// Invokes a delegate if called from the master process.
+    /// </summary>
+    /// <remarks>
+    /// The method does nothing if called from a forked process.
+    /// </remarks>
+    /// <param name="action">A delegate.</param>
+    public void RunInMaster(Action<RxProcess> action)
+    {
+        if (_isInMaster)
+            action?.Invoke(_rxProcess);
     }
 
     /// <inheritdoc/>

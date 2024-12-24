@@ -18,7 +18,7 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
         {
             StartInfo = startInfo,
             EnableRaisingEvents = true
-        };;
+        };
 
         SubscribeAllEvents();
     }
@@ -79,10 +79,29 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     /// </summary>
     public void Kill()
     {
+        if (_state == (int)RxProcessState.Exited)
+            return;
+
         if (_state != (int)RxProcessState.Running)
             ThrowWrongState((RxProcessState)_state);
 
         _process.Kill();
+    }
+
+    /// <summary>
+    /// Sends a line to the process standard input.
+    /// </summary>
+    /// <param name="line">A line.</param>
+    public void SendLine(string line)
+    {
+        if (_state == (int)RxProcessState.Exited)
+            return;
+
+        if (_state != (int)RxProcessState.Running)
+            ThrowWrongState((RxProcessState)_state);
+
+        _process.StandardInput.WriteLine(line);
+        _process.StandardInput.Flush();
     }
 
     /// <inheritdoc/>
@@ -91,31 +110,41 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
+        var state = (RxProcessState)Interlocked.Exchange(ref _state, (int)RxProcessState.Disposed);
+        if (state == RxProcessState.Exited || state == RxProcessState.Disposed)
+            return;
+
         UnsubscribeAllEvents();
         _process.Dispose();
     }
 
     private void OnOutLineReceived(object sender, DataReceivedEventArgs e)
     {
+        if (_state == (int)RxProcessState.Disposed)
+            return;
+
         var line = StdOutLine.Out(e.Data ?? string.Empty);
-        foreach (var subscription in _subscriptions)
-            subscription.OnNext(line);
+        NotifyOnNext(line);
     }
 
     private void OnErrLineReceived(object sender, DataReceivedEventArgs e)
     {
+        if (_state == (int)RxProcessState.Disposed)
+            return;
+
         var line = StdOutLine.Err(e.Data ?? string.Empty);
-        foreach (var subscription in _subscriptions)
-            subscription.OnNext(line);
+        NotifyOnNext(line);
     }
 
     private void OnExited(object? sender, EventArgs e)
     {
+        if (_state == (int)RxProcessState.Disposed)
+            return;
+        
         _state = (int)RxProcessState.Exited;
 
         UnsubscribeAllEvents();
-        foreach (var subscription in _subscriptions)
-            subscription.Complete();
+        Complete();
     }
 
     private void SubscribeAllEvents()
@@ -130,6 +159,18 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
         _process.OutputDataReceived -= OnOutLineReceived;
         _process.ErrorDataReceived -= OnErrLineReceived;
         _process.Exited -= OnExited;
+    }
+
+    private void NotifyOnNext(StdOutLine line)
+    {
+        foreach (var subscription in _subscriptions)
+            subscription.OnNext(line);
+    }
+
+    private void Complete()
+    {
+        foreach (var subscription in _subscriptions)
+            subscription.Complete();
     }
 
     private static void ThrowWrongState(RxProcessState state) =>
