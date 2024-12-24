@@ -1,4 +1,4 @@
-namespace RxProcess;
+namespace RxProcessLib;
 
 /// <summary>
 /// Represents a fork of the current process.

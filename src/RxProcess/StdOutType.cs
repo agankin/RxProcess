@@ -1,4 +1,4 @@
-namespace RxProcess;
+namespace RxProcessLib;
 
 /// <summary>
 /// Standard output type.

@@ -1,4 +1,4 @@
-namespace RxProcess;
+namespace RxProcessLib;
 
 internal class DummyDisposable : IDisposable
 {

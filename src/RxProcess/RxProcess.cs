@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace RxProcess;
+namespace RxProcessLib;
 
 /// <summary>
 /// Represensts a process as an observable reactively providing stdout/stderr data.

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace RxProcess;
+namespace RxProcessLib;
 
 /// <summary>
 /// Forks creation and control utility.

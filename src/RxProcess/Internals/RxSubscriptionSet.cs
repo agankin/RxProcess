@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 
-namespace RxProcess;
+namespace RxProcessLib;
 
 internal class RxSubscriptionSet : IEnumerable<RxSubscription>
 {
