@@ -24,9 +24,19 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     }
 
     /// <summary>
+    /// Fired on the process exit.
+    /// </summary>
+    public event Action? Exited;
+
+    /// <summary>
     /// The process state.
     /// </summary>
     public RxProcessState State => (RxProcessState)_state;
+
+    /// <summary>
+    /// An exit code of the process. A value is assigned after the process exits.
+    /// </summary>
+    public int ExitCode => _process.ExitCode;
 
     /// <summary>
     /// Creates new instance of <see cref="RxProcess"/>.
@@ -89,6 +99,11 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     }
 
     /// <summary>
+    /// Waits for the process exit.
+    /// </summary>
+    public void WaitForExit() => _process.WaitForExit();
+
+    /// <summary>
     /// Sends a line to the process standard input.
     /// </summary>
     /// <param name="line">A line.</param>
@@ -123,7 +138,10 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
         if (_state == (int)RxProcessState.Disposed)
             return;
 
-        var line = StdOutLine.Out(e.Data ?? string.Empty);
+        if (e.Data is null)
+            return;
+
+        var line = StdOutLine.Out(e.Data);
         NotifyOnNext(line);
     }
 
@@ -132,7 +150,10 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
         if (_state == (int)RxProcessState.Disposed)
             return;
 
-        var line = StdOutLine.Err(e.Data ?? string.Empty);
+        if (e.Data is null)
+            return;
+
+        var line = StdOutLine.Err(e.Data);
         NotifyOnNext(line);
     }
 
@@ -142,9 +163,12 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
             return;
         
         _state = (int)RxProcessState.Exited;
+        _process.WaitForExit();
 
         UnsubscribeAllEvents();
         Complete();
+
+        Exited?.Invoke();
     }
 
     private void SubscribeAllEvents()

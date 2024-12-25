@@ -17,15 +17,15 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     }
 
     /// <summary>
-    /// The empty instance returned on an attempt of forking already forked process.
+    /// The empty instance returned on forking an already forked process.
     /// </summary>
-    public static RxFork NoneForAlreadyForked { get; } = new RxFork();
+    public static RxFork None { get; } = new RxFork();
 
     /// <summary>
     /// If called from the master process starts the forked process.
     /// </summary>
     /// <remarks>
-    /// The method does nothing if called from a forked process.
+    /// This method does nothing if called from a forked process.
     /// </remarks>
     public void Start()
     {
@@ -37,7 +37,7 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     /// If called from the master process kills the forked process.
     /// </summary>
     /// <remarks>
-    /// The method does nothing if called from a forked process.
+    /// This method does nothing if called from a forked process.
     /// </remarks>
     public void Kill()
     {
@@ -49,7 +49,7 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     /// Invokes a delegate if called from the master process.
     /// </summary>
     /// <remarks>
-    /// The method does nothing if called from a forked process.
+    /// This method does nothing if called from a forked process.
     /// </remarks>
     /// <param name="action">A delegate.</param>
     public void RunInMaster(Action<RxProcess> action)

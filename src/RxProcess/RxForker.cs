@@ -14,12 +14,12 @@ public static class RxForker
     /// Forks the current master process.
     /// </summary>
     /// <remarks>
-    /// If invoked from a fork process returns <see cref="RxFork.NoneForAlreadyForked"/> without creating a new fork.
+    /// If invoked from a fork process returns <see cref="RxFork.None"/> instance without creating a new fork.
     /// </remarks> 
     public static RxFork Fork()
     {
         if (IsForked())
-            return RxFork.NoneForAlreadyForked;
+            return RxFork.None;
 
         var entry = Assembly.GetEntryAssembly().Location;
         var args = Environment.GetCommandLineArgs().AsEnumerable();
@@ -29,10 +29,10 @@ public static class RxForker
     }
 
     /// <summary>
-    /// Invokes a delegate if called from a master process.
+    /// Invokes a delegate if called from the master process.
     /// </summary>
     /// <remarks>
-    /// The method does nothing if called from a fork process.
+    /// This method does nothing if called from a fork process.
     /// </remarks>
     /// <param name="action">A delegate.</param>
     public static void RunInMaster(Action action)
@@ -45,7 +45,7 @@ public static class RxForker
     /// Invokes a delegate if called from a fork process.
     /// </summary>
     /// <remarks>
-    /// The method does nothing if called from a master process.
+    /// This method does nothing if called from the master process.
     /// </remarks>
     /// <param name="action">A delegate.</param>
     public static void RunInFork(Action action)
