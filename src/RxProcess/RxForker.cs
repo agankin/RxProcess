@@ -38,7 +38,20 @@ public static class RxForker
     public static void RunInMaster(Action action)
     {
         if (!IsForked())
-            action?.Invoke();
+            action();
+    }
+
+    /// <summary>
+    /// Invokes a delegate if called from the master process.
+    /// </summary>
+    /// <remarks>
+    /// This method does nothing if called from a fork process.
+    /// </remarks>
+    /// <param name="action">A delegate.</param>
+    public static async Task RunInMasterAsync(Func<Task> asyncAction)
+    {
+        if (!IsForked())
+            await asyncAction();
     }
 
     /// <summary>
@@ -51,7 +64,20 @@ public static class RxForker
     public static void RunInFork(Action action)
     {
         if (IsForked())
-            action?.Invoke();
+            action();
+    }
+
+    /// <summary>
+    /// Invokes a delegate if called from a fork process.
+    /// </summary>
+    /// <remarks>
+    /// This method does nothing if called from the master process.
+    /// </remarks>
+    /// <param name="action">A delegate.</param>
+    public static async Task RunInForkAsync(Func<Task> asyncAction)
+    {
+        if (IsForked())
+            await asyncAction();
     }
 
     private static bool IsForked() => Environment.GetCommandLineArgs()

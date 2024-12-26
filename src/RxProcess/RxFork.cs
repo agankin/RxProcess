@@ -46,6 +46,18 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     }
 
     /// <summary>
+    /// If called from the master process sends a line to the forked process to the standard input.
+    /// </summary>
+    /// <remarks>
+    /// This method does nothing if called from a forked process.
+    /// </remarks>
+    public void SendLine(string line)
+    {
+        if (_isInMaster)
+            _rxProcess.SendLine(line);
+    }
+
+    /// <summary>
     /// Invokes a delegate if called from the master process.
     /// </summary>
     /// <remarks>
@@ -55,7 +67,20 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     public void RunInMaster(Action<RxProcess> action)
     {
         if (_isInMaster)
-            action?.Invoke(_rxProcess);
+            action(_rxProcess);
+    }
+
+    /// <summary>
+    /// Invokes a delegate if called from the master process.
+    /// </summary>
+    /// <remarks>
+    /// This method does nothing if called from a forked process.
+    /// </remarks>
+    /// <param name="action">A delegate.</param>
+    public async Task RunInMasterAsync(Func<RxProcess, Task> asyncAction)
+    {
+        if (_isInMaster)
+            await asyncAction(_rxProcess);
     }
 
     /// <inheritdoc/>

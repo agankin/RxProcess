@@ -116,7 +116,6 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
             ThrowWrongState((RxProcessState)_state);
 
         _process.StandardInput.WriteLine(line);
-        _process.StandardInput.Flush();
     }
 
     /// <inheritdoc/>
