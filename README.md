@@ -1,5 +1,7 @@
 # RxProcess library
 
+![NuGet Version](https://img.shields.io/nuget/v/RxProcess)
+
 Provides a way to run child processes/forks as observables reactively emitting stdout/stderr data.
 
 - [RxProcess](#rxprocess)
@@ -7,13 +9,13 @@ Provides a way to run child processes/forks as observables reactively emitting s
 
 ## RxProcess
 
-The example below demonstrates how a new process is started with subscription for standard output/error data.
+The sample shows how a new process is started with subscription for standard output/error data.
 
 ```cs
 using System.Reactive.Linq;
 using RxProcessLib;
 
-// Starts a new ping process with passing an arg.
+// Starts a new process with passing an arg.
 using var ping = RxProcess.Create("ping", "www.google.com");
 
 // Subscription for the process standard output/error and completed events.
@@ -29,7 +31,7 @@ ping.Start();
 ping.WaitForExit();
 ```
 
-If run the code prints something like:
+The sample produces output like:
 
 ```
 Ping Out:
@@ -48,7 +50,9 @@ Ping exit code: 0
 
 ## RxFork
 
-The example below demonstrates starting 2 forks of the master process. Each fork receives input data via standard input then performs a calculation and returns results via standard output. The master process is notified about results from subscription for forks standard output data.
+The sample shows starting 2 forks from the master process.
+Each fork receives input data from the standard input then performs a calculation and returns results via the standard output.
+The master process is notified about results from subscription for the forks standard output.
 
 ```cs
 using System.Reactive.Linq;
@@ -58,7 +62,7 @@ using RxProcessLib;
 using var fork1 = RxForker.Fork();
 using var fork2 = RxForker.Fork();
 
-// This code is run only in the master process.
+// The delegate is run only in the master process.
 RxForker.RunInMaster(() => Console.WriteLine("Starting forks..."));
 
 // These 2 subscriptions receive events only in the master process.
@@ -75,15 +79,14 @@ using var fork2Subscription = fork2.Subscribe(
 fork1.Start();
 fork2.Start();
 
-// Send data to forks via standard inpit
-// They also have effect only in the master process and ignored in forks.
+// Sends data to forks via the standard input. The calls also have no effect in forks.
 fork1.SendLine("5");
 fork1.SendLine("6");
 
 fork2.SendLine("7");
 fork2.SendLine("8");
 
-// This code is run only in forks.
+// The delegate is run only in forks.
 RxForker.RunInFork(() =>
 {
     var x = int.Parse(Console.ReadLine()!);
@@ -95,7 +98,7 @@ RxForker.RunInFork(() =>
 RxForker.RunInMaster(() => Console.ReadKey(true));
 ```
 
-If run the code prints something like:
+The sample produces output like:
 
 ```
 Starting forks...

@@ -5,6 +5,23 @@
 	  <LangVersion>latest</LangVersion>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+    <PackageId>RxProcess</PackageId>
+    <PackageTags>Process;Fork;Reactive</PackageTags>
+    <Authors>Andrei Gankin</Authors>
+    <RepositoryUrl>https://github.com/agankin/RxProcess</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/agankin/RxProcess</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Provides a way to run child processes/forks as observables reactively emitting stdout/stderr data.</Description>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

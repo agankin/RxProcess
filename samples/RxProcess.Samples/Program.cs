@@ -1,7 +1,7 @@
 ﻿using System.Reactive.Linq;
 using RxProcessLib;
 
-// Starts a new ping process with passing an arg.
+// Starts a new process with passing an arg.
 using var ping = RxProcess.Create("ping", "www.google.com");
 
 // Subscription for the process standard output/error and completed events.

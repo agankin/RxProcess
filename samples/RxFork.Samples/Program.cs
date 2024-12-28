@@ -5,7 +5,7 @@ using RxProcessLib;
 using var fork1 = RxForker.Fork();
 using var fork2 = RxForker.Fork();
 
-// This code is run only in the master process.
+// The delegate is run only in the master process.
 RxForker.RunInMaster(() => Console.WriteLine("Starting forks..."));
 
 // These 2 subscriptions receive events only in the master process.
@@ -22,8 +22,7 @@ using var fork2Subscription = fork2.Subscribe(
 fork1.Start();
 fork2.Start();
 
-// Send data to forks via standard inpit
-// They also have effect only in the master process and ignored in forks.
+// Sends data to forks via the standard input. The calls also have no effect in forks.
 fork1.SendLine("5");
 fork1.SendLine("6");
 
