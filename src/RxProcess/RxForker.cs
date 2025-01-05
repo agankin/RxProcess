@@ -8,7 +8,7 @@ namespace RxProcessLib;
 public static class RxForker
 {
     private const string DotnetCmd = "dotnet";
-    private const string ForkedArg = "--forked";
+    private const string ForkEnvironmentVariable = "RxForker.Fork";
 
     /// <summary>
     /// Forks the current master process.
@@ -23,7 +23,9 @@ public static class RxForker
 
         var entry = Assembly.GetEntryAssembly().Location;
         var args = Environment.GetCommandLineArgs().AsEnumerable();
-        var rxProcess = RxProcess.Create(DotnetCmd, args.Prepend(entry).Append(ForkedArg));
+
+        var rxProcess = RxProcess.Create(DotnetCmd, args.Prepend(entry))
+            .SetEnvironmentVariable(ForkEnvironmentVariable, "true");
 
         return new RxFork(rxProcess);
     }
@@ -80,6 +82,5 @@ public static class RxForker
             await asyncAction();
     }
 
-    private static bool IsForked() => Environment.GetCommandLineArgs()
-        .Any(args => string.Equals(args, ForkedArg, StringComparison.OrdinalIgnoreCase));
+    private static bool IsForked() => Environment.GetEnvironmentVariable(ForkEnvironmentVariable) is not null;
 }

@@ -71,6 +71,17 @@ public class RxProcess : IObservable<StdOutLine>, IDisposable
     }
 
     /// <summary>
+    /// Sets an environment variable.
+    /// </summary>
+    /// <param name="name">A variable name.</param>
+    /// <param name="value">A value.</param>
+    public RxProcess SetEnvironmentVariable(string name, string value)
+    {
+        _process.StartInfo.EnvironmentVariables[name] = value;
+        return this;
+    }
+
+    /// <summary>
     /// Starts the process.
     /// </summary>
     public void Start()
