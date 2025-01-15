@@ -64,7 +64,7 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     /// This method does nothing if called from a forked process.
     /// </remarks>
     /// <param name="action">A delegate.</param>
-    public void RunInMaster(Action<RxProcess> action)
+    public void AccessInMaster(Action<RxProcess> action)
     {
         if (_isInMaster)
             action(_rxProcess);
@@ -77,7 +77,7 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     /// This method does nothing if called from a forked process.
     /// </remarks>
     /// <param name="action">A delegate.</param>
-    public async Task RunInMasterAsync(Func<RxProcess, Task> asyncAction)
+    public async Task AccessInMasterAsync(Func<RxProcess, Task> asyncAction)
     {
         if (_isInMaster)
             await asyncAction(_rxProcess);
