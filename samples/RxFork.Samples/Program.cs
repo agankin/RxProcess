@@ -38,4 +38,16 @@ RxForker.RunInFork(() =>
     Console.WriteLine($"{x} * {y} = {x * y}");
 });
 
+// Accessing underlying fork's process in the master.
+fork1.AccessInMaster(process => 
+{
+    process.WaitForExit();
+    Console.WriteLine($"FORK1 exited with code = {process.ExitCode}");
+});
+fork2.AccessInMaster(process => 
+{
+    process.WaitForExit();
+    Console.WriteLine($"FORK2 exited with code = {process.ExitCode}");
+});
+
 RxForker.RunInMaster(() => Console.ReadKey(true));
