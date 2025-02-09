@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace RxProcessLib;
 
 /// <summary>
-/// Represensts a process as an observable reactively providing stdout/stderr data.
+/// Represensts a process as an observable reactively emitting stdout/stderr data.
 /// </summary>
 public class RxProcess : IObservable<StdOutLine>, IDisposable
 {

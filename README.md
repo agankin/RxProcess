@@ -9,7 +9,7 @@ Provides a way to run child processes/forks as observables reactively emitting s
 
 ## RxProcess
 
-The sample shows how a new process is started with subscription for standard output/error data.
+This sample shows how to start a new process and subscribe for its standard output/error data events.
 
 ```cs
 using System.Reactive.Linq;
@@ -18,7 +18,7 @@ using RxProcessLib;
 // Starts a new process with passing an arg.
 using var ping = RxProcess.Create("ping", "www.google.com");
 
-// Subscription for the process standard output/error and completed events.
+// Adds subscription for standard output/error and completed (process exited) events.
 using var _ = ping.Subscribe(
     onNext: line => Console.WriteLine($"Ping {line.Type}: {line.Value}"),
     onCompleted: () => Console.WriteLine($"Ping exit code: {ping.ExitCode}")
@@ -31,7 +31,7 @@ ping.Start();
 ping.WaitForExit();
 ```
 
-The sample produces output like:
+It outputs lines like:
 
 ```
 Ping Out:
@@ -50,15 +50,17 @@ Ping exit code: 0
 
 ## RxFork
 
-The sample shows starting 2 forks from the master process.
-Each fork receives input data from the standard input then performs a calculation and returns results via the standard output.
-The master process is notified about results from subscription for the forks standard output.
+This sample shows how to start forks from the master process.
+
+Each of 2 forks receives input data via the standard input then performs work and returns results via the standard output.
+
+The master process subscribes for forks standard output/error data events.
 
 ```cs
 using System.Reactive.Linq;
 using RxProcessLib;
 
-// Creating 2 forks of the current master process. The calls have no effect in forks.
+// Creating 2 forks of the current master process. These calls have no effect in forks.
 using var fork1 = RxForker.Fork();
 using var fork2 = RxForker.Fork();
 
@@ -79,7 +81,7 @@ using var fork2Subscription = fork2.Subscribe(
 fork1.Start();
 fork2.Start();
 
-// Sends data to forks via the standard input. The calls also have no effect in forks.
+// Sends data to forks via the standard input. These calls also have effect in the master process.
 fork1.SendLine("5");
 fork1.SendLine("6");
 
@@ -110,7 +112,7 @@ fork2.AccessInMaster(process =>
 RxForker.RunInMaster(() => Console.ReadKey(true));
 ```
 
-The sample produces output like:
+It outputs lines like:
 
 ```
 FORK1: 5 * 6 = 30

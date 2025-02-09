@@ -17,7 +17,7 @@ public class RxFork : IObservable<StdOutLine>, IDisposable
     }
 
     /// <summary>
-    /// The empty instance returned on forking an already forked process.
+    /// Null (dummy) instance returned on forking an already forked process.
     /// </summary>
     public static RxFork None { get; } = new RxFork();
 
